@@ -18,6 +18,10 @@ const skillSchema = new mongoose.Schema({
         max: 100,
         required: true,
     },
+    playerId: {
+        type: Number,
+        ref: 'Player',
+    }
 }, { _id: false });
 
 skillSchema.plugin(AutoIncrement, { inc_field: 'id', id: 'skill_counter' });

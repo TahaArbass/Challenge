@@ -8,10 +8,15 @@ const AuthMiddleware = require('../utils/AuthMiddleware');
 router.get('/player', PlayerController.getAllPlayers);
 
 // create a new player
-router.post('/', playerValidator, PlayerController.createPlayer);
+router.post('/player', playerValidator, PlayerController.createPlayer);
+
+// update a player
+router.put('/player/:id', playerValidator, PlayerController.updatePlayer);
 
 // delete a player
 router.delete('/player/:id', AuthMiddleware, PlayerController.deletePlayer);
 
+// team choosing process
+router.post('/team/process', PlayerController.teamChoosingProcess);
 
 module.exports = router;
