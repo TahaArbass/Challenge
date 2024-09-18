@@ -30,6 +30,15 @@ class PlayerService {
             throw new CustomError(err.message, 400);
         }
     }
+
+    // delete a player
+    static async deletePlayer(id) {
+        try {
+            await Player.deleteOne({ id: id });
+        } catch (err) {
+            throw new Error(err.message);
+        }
+    }
 }
 
 module.exports = PlayerService;

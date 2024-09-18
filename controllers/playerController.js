@@ -28,6 +28,18 @@ class PlayerController {
             }
         }
     }
+
+    // delete a player
+    static async deletePlayer(req, res) {
+        try {
+            const id = req.params.id;
+            await PlayerService.deletePlayer(id);
+            res.status(200).json({ message: 'Player deleted successfully' });
+        }
+        catch (err) {
+            res.status(500).json({ message: err.message });
+        }
+    }
 }
 
 module.exports = PlayerController;
