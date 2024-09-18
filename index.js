@@ -7,7 +7,6 @@ app.use(express.json());
 
 const baseUrl = process.env.BASE_URL;
 
-// use base url for all routes
 app.use(baseUrl, require('./routes/playerRoutes'));
 
 // connect to MongoDB
@@ -24,4 +23,6 @@ const port = process.env.PORT || 3000; // default port is 3000
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 })
+
+module.exports = app;
 

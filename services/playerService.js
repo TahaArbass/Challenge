@@ -109,10 +109,10 @@ class PlayerService {
         }
     }
 
-    // team choosing process 
+    // team choosing process
     static async teamChoosingProcess(requirements) {
-
         const results = [];
+        const usedPlayerIds = new Set(); // Track used player IDs to avoid duplicates
 
         // Loop through each requirement to find players
         for (const req of requirements) {
@@ -121,7 +121,10 @@ class PlayerService {
             // Step 1: Find players by position and add fields for sorting by mainSkill or maxSkill
             const players = await Player.aggregate([
                 {
-                    $match: { position } // Match players by position
+                    $match: {
+                        position,
+                        _id: { $nin: Array.from(usedPlayerIds) } // Exclude already used players
+                    }
                 },
                 {
                     $addFields: {
@@ -163,20 +166,21 @@ class PlayerService {
 
             // Step 4: Check if we have enough players for this position
             if (players.length < numberOfPlayers) {
-                throw new Error(`Insufficient number of players for position: ${position}`);
+                throw new CustomError(`Insufficient number of players for position: ${position}`, 400);
             }
 
-            // remove _id and __v fields from the response
+            // Step 5: Update the set of used player IDs and add the selected players to the results array
             players.forEach(player => {
+                usedPlayerIds.add(player._id); // Track player ID as used
                 delete player._id;
                 delete player.__v;
             });
 
-            // Step 5: Add the selected players to the results array
             results.push(...players);
         }
 
         return results;
     }
+
 }
 module.exports = PlayerService;

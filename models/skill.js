@@ -24,6 +24,7 @@ const skillSchema = new mongoose.Schema({
     }
 }, { _id: false });
 
+// Add an auto-incrementing field to the schema
 skillSchema.plugin(AutoIncrement, { inc_field: 'id', id: 'skill_counter' });
 
 module.exports = skillSchema;

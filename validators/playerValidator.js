@@ -1,57 +1,64 @@
 const { body, validationResult } = require('express-validator');
 
-// Middleware for validating player data
-const playerValidator = [
-    // Name should not be em    pty
-    body('name')
-        .notEmpty()
-        .withMessage('Name is required').bail(),
+const playerValidator = (req, res, next) => {
+    // Define valid positions and skills
+    const validPositions = ['defender', 'midfielder', 'forward'];
+    const validSkills = ['defense', 'speed', 'strength', 'stamina', 'attack'];
 
-    // Position must be one of the allowed values
-    body('position').notEmpty().withMessage('Position is required').bail()
-        .isIn(['defender', 'midfielder', 'forward'])
-        .withMessage((value) => `Invalid value for position: ${value}`).bail(),
+    const { name, position, playerSkills } = req.body;
 
-    // Ensure playerSkills is an array with at least one skill
-    body('playerSkills')
-        .isArray()
-        .withMessage('Player skills must be an array').bail()
-        .custom((skills) => {
-            if (skills.length === 0) {
-                throw new Error('At least one skill is required');
-            }
+    // Check if name is provided
+    if (!name) {
+        return res.status(400).json({ message: 'Name is required' });
+    }
 
-            // Check for duplicate skills
-            const skillNames = skills.map(skill => skill.skill);
-            const skillNamesSet = new Set(skillNames);
-            if (skillNames.length !== skillNamesSet.size) {
-                throw new Error('Duplicate skills are not allowed');
-            }
+    // Check if position is valid
+    if (!validPositions.includes(position)) {
+        return res.status(400).json({
+            message: `Invalid value for position: ${position}.`
+        });
+    }
 
-            return true;
-        }).bail(),
+    // Check if playerSkills is an array
+    if (!Array.isArray(playerSkills)) {
+        return res.status(400).json({ message: 'Player skills must be an array' });
+    }
+
+    // Check if playerSkills array is not empty
+    if (playerSkills.length === 0) {
+        return res.status(400).json({ message: 'At least one skill is required' });
+    }
+
+    // Create a Set to track unique skills
+    const skillNames = playerSkills.map(skill => skill.skill);
+    const skillNamesSet = new Set(skillNames);
+
+    // Check for duplicate skills
+    if (skillNames.length !== skillNamesSet.size) {
+        return res.status(400).json({ message: 'Duplicate skills are not allowed' });
+    }
 
     // Validate each skill object in the array
-    body('playerSkills.*.skill')
-        .isIn(['defense', 'speed', 'strength', 'stamina', 'attack'])
-        .withMessage((value) => `Invalid value for skill: ${value}`).bail(),
+    for (let i = 0; i < playerSkills.length; i++) {
+        const { skill, value } = playerSkills[i];
 
-    // Skill value must be an integer between 0 and 100
-    body('playerSkills.*.value')
-        .isInt({ min: 0, max: 100 })
-        .withMessage((value) => `Invalid value for skill value: ${value}`).bail(),
-
-    // Middleware to handle validation results and errors
-    (req, res, next) => {
-        const errors = validationResult(req);
-        if (!errors.isEmpty()) {
-            // Get the first validation error
-            const firstError = errors.array()[0];
-            const message = firstError.msg;
-            return res.status(400).json({ message });
+        // Check if skill is valid
+        if (!validSkills.includes(skill)) {
+            return res.status(400).json({
+                message: `Invalid value for skill: ${skill}.`
+            });
         }
-        next();
+
+        // Check if skill value is an integer between 0 and 100
+        if (!Number.isInteger(value) || value < 0 || value > 100) {
+            return res.status(400).json({
+                message: `Invalid value for skill value: ${value}. It should be an integer between 0 and 100.`
+            });
+        }
     }
-];
+
+    // If validation passes we proceed
+    next();
+};
 
 module.exports = playerValidator;

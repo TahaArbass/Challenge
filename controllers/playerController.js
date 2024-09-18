@@ -70,7 +70,12 @@ class PlayerController {
             const team = await PlayerService.teamChoosingProcess(requirements);
             res.status(200).json(team);
         } catch (err) {
-            res.status(500).json({ message: err.message });
+            if (err instanceof CustomError) {
+                res.status(err.statusCode).json({ message: err.message });
+            }
+            else {
+                res.status(500).json({ message: err.message });
+            }
         }
     }
 
